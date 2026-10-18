@@ -1,0 +1,41 @@
+{
+  "name": "cypress-ts-api-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --browser chrome",
+    "cy:run:api": "cypress run --browser chrome --spec 'cypress/e2e/api/**/*.cy.ts'",
+    "cy:run:ui": "cypress run --browser chrome --spec 'cypress/e2e/ui/**/*.cy.ts'",
+    "cy:run:chrome": "cypress run --browser chrome --headless",
+    "typecheck": "tsc --noEmit",
+    "cy:smoke": "cypress run --browser chrome --headless --spec \"cypress/e2e/{api,ui}/smoke/**/*.cy.ts\"",
+    "cy:smoke:headed": "cypress run --browser chrome --headed --spec \"cypress/e2e/{api,ui}/smoke/**/*.cy.ts\"",
+    "cy:regression": "cypress run --browser chrome --headless",
+    "cy:regression:headed": "cypress run --browser chrome --headed",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix --max-warnings=0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "@typescript-eslint/parser": "^8.71.2",
+    "cypress": "^16.1.1",
+    "cypress-mochawesome-reporter": "^5.0.0",
+    "cypress-multi-reporters": "^2.0.5",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-cypress": "^7.0.2",
+    "mocha-junit-reporter": "^2.2.1",
+    "prettier": "3.9.10",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.71.2"
+  }
+}

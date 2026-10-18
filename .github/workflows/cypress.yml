@@ -1,0 +1,99 @@
+name: Cypress CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Monday at 07:00 UTC. GitHub schedules run from the default branch.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Suite to run
+        type: choice
+        options:
+          - regression
+          - smoke
+        default: regression
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Format, lint, and TypeScript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies without downloading Cypress
+        run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint including focused and skipped test protection
+        run: npm run lint
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+  tests:
+    name: Chrome tests
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      TEST_SUITE: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'smoke' || inputs.suite || 'regression' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Run selected suite in headless Chrome
+        id: cypress
+        uses: cypress-io/github-action@v7
+        with:
+          install-command: npm ci
+          command: npm run cy:${{ env.TEST_SUITE }}
+        env:
+          CYPRESS_VIDEO: 'true'
+
+      - name: Publish test summary
+        if: ${{ !cancelled() }}
+        env:
+          TEST_OUTCOME: ${{ steps.cypress.outcome }}
+        shell: bash
+        run: |
+          if [ -f cypress/reports/summary.md ]; then
+            cat cypress/reports/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Cypress $TEST_SUITE ($TEST_OUTCOME)" >> "$GITHUB_STEP_SUMMARY"
+            echo "No test summary was generated. Check the Cypress step logs for installation, configuration, or browser startup errors." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload reports, screenshots, and videos
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-${{ env.TEST_SUITE }}-chrome-${{ github.run_attempt }}
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+            cypress/videos/
+          if-no-files-found: ignore
+          retention-days: 14

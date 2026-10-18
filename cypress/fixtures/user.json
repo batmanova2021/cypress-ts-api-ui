@@ -1,0 +1,18 @@
+{
+  "name": "Smoke Tester",
+  "password": "SmokeTest123!",
+  "title": "Mr",
+  "birth_date": "15",
+  "birth_month": "6",
+  "birth_year": "1990",
+  "firstname": "Smoke",
+  "lastname": "Tester",
+  "company": "Test Company",
+  "address1": "123 Test Street",
+  "address2": "Suite 1",
+  "country": "United States",
+  "zipcode": "10001",
+  "state": "New York",
+  "city": "New York",
+  "mobile_number": "2025550100"
+}
