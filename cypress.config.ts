@@ -38,7 +38,9 @@ export default defineConfig({
       on('after:run', async (results) => {
         // Persist failure evidence even if HTML generation itself fails.
         writeRunSummary(results, reportDir);
-        if ('runs' in results && results.runs.length > 0) await afterRunHook();
+        if ('runs' in results && results.runs.some((run) => run.tests.length > 0)) {
+          await afterRunHook();
+        }
       });
       return config;
     },

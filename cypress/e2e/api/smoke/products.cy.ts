@@ -1,11 +1,10 @@
-import type { ProductsResponse } from '../../../support/types';
-import { parseApiBody } from '../../../support/api';
+import { validateApiBody } from '../../../support/api';
 
 describe('API smoke: product catalog', () => {
   it('returns available products with essential details', () => {
     cy.request<unknown>('/api/productsList').then((response) => {
       expect(response.status).to.eq(200);
-      const body = parseApiBody<ProductsResponse>(response.body);
+      const body = validateApiBody('products', response.body);
       expect(body.responseCode).to.eq(200);
       expect(body.products).to.be.an('array');
       expect(body.products.length).to.be.greaterThan(0);

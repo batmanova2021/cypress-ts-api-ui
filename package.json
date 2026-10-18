@@ -17,7 +17,9 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix --max-warnings=0",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "cy:smoke:firefox": "cypress run --browser firefox --headless --spec \"cypress/e2e/ui/smoke/**/*.cy.ts\"",
+    "cy:smoke:firefox:headed": "cypress run --browser firefox --headed --spec \"cypress/e2e/ui/smoke/**/*.cy.ts\""
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,8 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
     "@typescript-eslint/parser": "^8.71.2",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "cypress": "^16.1.1",
     "cypress-mochawesome-reporter": "^5.0.0",
     "cypress-multi-reporters": "^2.0.5",

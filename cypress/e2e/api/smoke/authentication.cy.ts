@@ -1,5 +1,5 @@
-import type { ApiResult, TestUser } from '../../../support/types';
-import { parseApiBody } from '../../../support/api';
+import type { TestUser } from '../../../support/types';
+import { validateApiBody } from '../../../support/api';
 
 describe('API smoke: authentication', () => {
   let user: TestUser | undefined;
@@ -26,7 +26,7 @@ describe('API smoke: authentication', () => {
       });
     }).then((response) => {
       expect(response.status).to.eq(200);
-      const body = parseApiBody<ApiResult>(response.body);
+      const body = validateApiBody('message', response.body);
       expect(body.responseCode).to.eq(200);
       expect(body.message).to.eq('User exists!');
     });

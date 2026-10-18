@@ -49,12 +49,16 @@ jobs:
         run: npm run typecheck
 
   tests:
-    name: Chrome tests
+    name: ${{ matrix.browser }} tests
     needs: quality
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
     env:
-      TEST_SUITE: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'smoke' || inputs.suite || 'regression' }}
+      TEST_SUITE: ${{ (matrix.browser == 'firefox' || github.event_name == 'push' || github.event_name == 'pull_request') && 'smoke' || inputs.suite || 'regression' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -64,15 +68,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Run selected suite in headless Chrome
+      - name: Install Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: latest
+
+      - name: Run selected suite in headless ${{ matrix.browser }}
         id: cypress
         uses: cypress-io/github-action@v7
         with:
           install-command: npm ci
-          command: npm run cy:${{ env.TEST_SUITE }}${{ github.event_name == 'schedule' && ' -- --record' || '' }}
+          command: npm run cy:${{ env.TEST_SUITE }}${{ matrix.browser == 'firefox' && ':firefox' || '' }}${{ github.event_name == 'schedule' && matrix.browser == 'chrome' && ' -- --record' || '' }}
         env:
-          CYPRESS_VIDEO: 'true'
-          CYPRESS_RECORD_KEY: ${{ github.event_name == 'schedule' && secrets.CYPRESS_RECORD_KEY || '' }}
+          CYPRESS_VIDEO: ${{ matrix.browser == 'chrome' && 'true' || 'false' }}
+          CYPRESS_RECORD_KEY: ${{ github.event_name == 'schedule' && matrix.browser == 'chrome' && secrets.CYPRESS_RECORD_KEY || '' }}
 
       - name: Publish test summary
         if: ${{ !cancelled() }}
@@ -91,7 +101,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-${{ env.TEST_SUITE }}-chrome-${{ github.run_attempt }}
+          name: cypress-${{ env.TEST_SUITE }}-${{ matrix.browser }}-${{ github.run_attempt }}
           path: |
             cypress/reports/
             cypress/screenshots/

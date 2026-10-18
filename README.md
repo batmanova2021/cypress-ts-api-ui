@@ -2,7 +2,9 @@
 
 API and UI tests for [Automation Exercise](https://automationexercise.com/), with
 independent test data, typed custom commands, Chrome execution, and GitHub Actions.
-The suite contains five smoke tests and seventeen additional regression tests.
+The Chrome suite contains five smoke tests and twenty-two additional regression tests.
+Firefox reuses the three UI smoke tests; five regression tests validate the schema
+guards with in-memory samples, and twenty-two tests exercise the live demo.
 
 **[View public Cypress Cloud results](https://cloud.cypress.io/projects/iwa573/runs/1/overview)**
 — explore an example recorded run, test outcomes, and available debugging artifacts.
@@ -19,27 +21,35 @@ npm run typecheck
 npm run cy:smoke
 ```
 
-Chrome must be installed for the default run scripts. To use another supported,
+Chrome must be installed for the default run scripts. Install Firefox to use the
+Firefox smoke scripts; CI installs Firefox automatically. To use another supported,
 installed browser, append `-- --browser firefox` or `-- --browser electron`.
 `cy:open` lets you select an installed browser interactively.
 
+If Firefox reports `Could not find profile folder` or fails to connect before
+any tests execute, check the local Firefox installation/profile first. This was
+observed on the development Mac even with a disposable profile. The Firefox CI
+job installs its own browser on Ubuntu and does not skip tests on launch failure.
+
 ## Commands
 
-| Command                        | Purpose                                                   |
-| ------------------------------ | --------------------------------------------------------- |
-| `npm run format`               | Format source, configuration, fixtures, and documentation |
-| `npm run format:check`         | Check formatting without changes                          |
-| `npm run lint`                 | Check ESLint rules with zero warnings allowed             |
-| `npm run lint:fix`             | Apply available lint fixes                                |
-| `npm run typecheck`            | Check strict TypeScript, unused code, and return paths    |
-| `npm run cy:open`              | Interactive runner                                        |
-| `npm run cy:smoke`             | Five smoke tests in headless Chrome                       |
-| `npm run cy:smoke:headed`      | Smoke tests with visible Chrome                           |
-| `npm run cy:regression`        | All 22 tests in headless Chrome, including smoke          |
-| `npm run cy:regression:headed` | All tests with visible Chrome                             |
-| `npm run cy:run:api`           | All API tests in headless Chrome                          |
-| `npm run cy:run:ui`            | All UI tests in headless Chrome                           |
-| `npm run cy:run:chrome`        | All tests in headless Chrome                              |
+| Command                           | Purpose                                                   |
+| --------------------------------- | --------------------------------------------------------- |
+| `npm run format`                  | Format source, configuration, fixtures, and documentation |
+| `npm run format:check`            | Check formatting without changes                          |
+| `npm run lint`                    | Check ESLint rules with zero warnings allowed             |
+| `npm run lint:fix`                | Apply available lint fixes                                |
+| `npm run typecheck`               | Check strict TypeScript, unused code, and return paths    |
+| `npm run cy:open`                 | Interactive runner                                        |
+| `npm run cy:smoke`                | Five smoke tests in headless Chrome                       |
+| `npm run cy:smoke:headed`         | Smoke tests with visible Chrome                           |
+| `npm run cy:smoke:firefox`        | Three UI smoke tests in headless Firefox                  |
+| `npm run cy:smoke:firefox:headed` | Three UI smoke tests with visible Firefox                 |
+| `npm run cy:regression`           | All 27 tests in headless Chrome, including smoke          |
+| `npm run cy:regression:headed`    | All tests with visible Chrome                             |
+| `npm run cy:run:api`              | All API tests in headless Chrome                          |
+| `npm run cy:run:ui`               | All UI tests in headless Chrome                           |
+| `npm run cy:run:chrome`           | All tests in headless Chrome                              |
 
 To focus a local run, append `-- --spec cypress/e2e/ui/regression/cart.cy.ts` to
 `cy:regression`. Committed `.only`, `.skip`, disabled Mocha aliases, and pending
@@ -53,7 +63,8 @@ Every `cypress run` creates fresh reports, replacing the previous run's report d
 - `cypress/reports/junit/results-*.xml`: JUnit results, one file per spec.
 - `cypress/reports/summary.md`: totals, failed specs/tests, errors, and tests recovered on retry.
 - `cypress/screenshots/`: screenshots on test failures, embedded in the HTML report.
-- `cypress/videos/`: recorded when `CYPRESS_VIDEO=true`, including in CI.
+- `cypress/videos/`: recorded when `CYPRESS_VIDEO=true`, including Chrome CI runs.
+  Firefox smoke CI keeps screenshots and reports, with video disabled.
 
 The HTML report has inline page assets; download the complete artifact to retain
 its linked videos. Reports and artifacts are ignored by Git, ESLint, and Prettier.
@@ -66,24 +77,27 @@ fails the job. Investigate the failed attempt before treating a retry as resolut
 
 ## GitHub Actions
 
-The workflow uses Ubuntu 24.04, Node.js 24, and the runner's installed Chrome:
+The workflow uses Ubuntu 24.04 and Node.js 24. Independent Chrome and Firefox
+jobs run after quality checks; a failure in one does not cancel the other:
 
-| Trigger              | Quality checks                  | Test suite                                   | Cloud recording |
-| -------------------- | ------------------------------- | -------------------------------------------- | --------------- |
-| Push or pull request | Formatting, linting, TypeScript | Smoke                                        | Off             |
-| Monday at 07:00 UTC  | Same checks                     | Full regression including smoke              | On              |
-| Manual dispatch      | Same checks                     | Regression by default; smoke can be selected | Off             |
+| Trigger              | Chrome suite                                 | Firefox suite | Cloud recording |
+| -------------------- | -------------------------------------------- | ------------- | --------------- |
+| Push or pull request | Smoke (API + UI)                             | UI smoke      | Off             |
+| Monday at 07:00 UTC  | Full regression including smoke              | UI smoke      | Chrome only     |
+| Manual dispatch      | Regression by default; smoke can be selected | UI smoke      | Off             |
 
 Tests wait for the quality job. GitHub schedules run from the default branch and
 may start later than their scheduled time. Each run publishes a Markdown job
-summary and uploads HTML/JUnit reports, screenshots, and videos for fourteen days,
+summary and uploads separate browser artifacts with HTML/JUnit reports, screenshots,
+and Chrome videos for fourteen days,
 including after test failures. Download the artifact from the run's Actions page
 and open `reports/html/index.html` inside it.
 Dependency and Cypress caches speed up installation; `npm ci` uses the lockfile.
 
-Weekly scheduled regression runs record to Cypress Cloud using the repository
+Weekly scheduled Chrome regression runs record to Cypress Cloud using the repository
 secret `CYPRESS_RECORD_KEY`. Push, pull-request, and manual workflow runs do not
-record and do not receive the key. Scheduled recording requires a valid secret;
+record and do not receive the key. Firefox never records or receives the key.
+Scheduled recording requires a valid secret;
 a missing or invalid key fails the recorded run instead of silently disabling it.
 Workflow changes must reach the default branch before the schedule uses them.
 
@@ -97,7 +111,7 @@ Reviewers can inspect recorded test results through these links:
 
 Open the example run to review test outcomes, durations, and the screenshots,
 videos, or Test Replay data available for that recording. Only runs explicitly
-recorded to Cloud appear there. Weekly scheduled runs are recorded automatically;
+recorded to Cloud appear there. Weekly scheduled Chrome runs are recorded automatically;
 ordinary local runs and push/PR/manual workflow runs remain unrecorded. Every test
 run still produces the HTML/JUnit reports described above.
 
@@ -111,8 +125,8 @@ npm run cy:regression -- --record
 
 Automated recording is scheduled for **Mondays at 07:00 UTC** (03:00 in New York
 during daylight saving time, 02:00 during standard time). GitHub may delay scheduled
-runs. With the current 22 tests, four or five weekly runs record approximately
-88–110 test results per month; extra recorded runs also count toward usage.
+runs. With the current 27 Chrome tests, four or five weekly runs record approximately
+108–135 test results per month; extra recorded runs also count toward usage.
 
 The workflow's **Run workflow** button runs tests on demand without Cloud recording.
 Maintainers can record an additional local run using the command above, which
@@ -136,8 +150,13 @@ account's credentials if recovery is needed.
 
 Override the target using Cypress's standard `CYPRESS_BASE_URL` environment
 variable. The public API may return JSON as text and reports application outcomes
-through `responseCode`; tests check HTTP and application results. Its login
-verification API does not establish a browser session.
+through `responseCode`. `validateApiBody` parses responses and validates their
+JSON Schema with Ajv before yielding a typed value. Schemas cover message responses,
+product lists/search (including nested category and brand), and account details.
+Required contract fields, scalar types, price format, and email format are checked.
+Additive fields are allowed; missing fields and invalid values fail with schema paths.
+Values are not coerced, filled in, or removed. Existing HTTP and business assertions
+remain in the specs. The login verification API does not establish a browser session.
 
 ## Code quality and architecture
 

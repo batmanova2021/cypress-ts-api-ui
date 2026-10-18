@@ -14,8 +14,14 @@ UI tests verify what users can do and see.
 | API regression | Search match/no match; missing search field; unsupported method; incorrect password; missing email; persisted updates; deleted-account login rejection          | 8     |
 | UI regression  | Invalid login; logout persistence; duplicate registration; successful registration; search match/no match; product details; quantity/total; removal persistence | 9     |
 
-Full regression: 22 tests. Smoke: 5 tests. Counts refer to logical tests before
+Five additional schema-guard tests exercise valid text/objects, empty results,
+additive fields, missing/nested fields, wrong scalar types, invalid price/email,
+malformed JSON, null bodies, and invalid envelopes. These use in-memory samples.
+
+Full Chrome regression: 27 tests (22 live scenarios + 5 schema-guard tests).
+Chrome smoke: 5 tests. Firefox smoke: the same 3 UI smoke tests. Counts refer to logical tests before
 retries. Smoke runs on pushes and PRs; full regression runs weekly and on demand.
+Firefox smoke also runs on every CI trigger, without repeating API tests.
 Run full regression locally before merging changes that affect framework setup,
 authentication, data lifecycle, or shared UI helpers.
 
@@ -27,6 +33,7 @@ authentication, data lifecycle, or shared UI helpers.
 - Use retryable Cypress assertions and request aliases, never fixed sleeps.
 - Preserve real service responses in these end-to-end scenarios. Future stubbed error-path tests must be labeled separately.
 - Verify persisted outcomes: account updates through readback, deletion through login rejection, logout/removal after reload.
+- Validate runtime response schemas as well as business outcomes. Required fields/types are enforced; additive fields are allowed and values are not coerced.
 - Check application `responseCode` as well as HTTP status; this demo returns HTTP 200 for several application errors.
 - Keep assertions in specs. Helpers share mechanics without hiding scenario outcomes.
 
@@ -60,9 +67,10 @@ product changes, and network latency can affect results. Interrupted processes
 can leave synthetic accounts behind. A local controllable app would enable reliable
 reset endpoints, deeper authorization checks, and deterministic fault injection.
 
-Chrome is the only automated browser target; Firefox/WebKit coverage is not claimed.
+Chrome runs the full suite; Firefox covers only UI smoke. Full Firefox regression
+and WebKit coverage are not claimed.
 The suite does not cover payment completion, performance, accessibility, visual
-regression, or full runtime API schema validation. Add these based on requirements
-and risk, not simply to increase test count. Weekly regression records to Cypress
-Cloud; push, PR, and manual workflow runs remain unrecorded. The README links to
+regression, or exhaustive schemas for every field exposed by the service. Add these based on requirements
+and risk, not simply to increase test count. Weekly Chrome regression records to Cypress
+Cloud; Firefox and push, PR, and manual workflow runs remain unrecorded. The README links to
 public results. Monitor recorded usage as the suite grows.

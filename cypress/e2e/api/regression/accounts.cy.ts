@@ -1,6 +1,6 @@
 import { loadFixture } from '../../../support/data';
-import type { ApiResult, TestUser, UserResponse } from '../../../support/types';
-import { parseApiBody } from '../../../support/api';
+import type { TestUser } from '../../../support/types';
+import { validateApiBody } from '../../../support/api';
 
 describe('API regression: accounts', () => {
   let user: TestUser;
@@ -28,7 +28,7 @@ describe('API regression: accounts', () => {
         body: { email: user.email, password: incorrectPassword },
       }).then((response) => {
         expect(response.status).to.eq(200);
-        expect(parseApiBody<ApiResult>(response.body)).to.deep.eq({
+        expect(validateApiBody('message', response.body)).to.deep.eq({
           responseCode: 404,
           message: 'User not found!',
         });
@@ -47,7 +47,7 @@ describe('API regression: accounts', () => {
       }),
     ).then((response) => {
       expect(response.status).to.eq(200);
-      expect(parseApiBody<ApiResult>(response.body)).to.deep.eq({
+      expect(validateApiBody('message', response.body)).to.deep.eq({
         responseCode: 400,
         message: 'Bad request, email or password parameter is missing in POST request.',
       });
@@ -64,7 +64,7 @@ describe('API regression: accounts', () => {
         body: { ...user, name: updatedName, city: updatedCity },
       }).then((response) => {
         expect(response.status).to.eq(200);
-        expect(parseApiBody<ApiResult>(response.body)).to.deep.eq({
+        expect(validateApiBody('message', response.body)).to.deep.eq({
           responseCode: 200,
           message: 'User updated!',
         });
@@ -72,7 +72,7 @@ describe('API regression: accounts', () => {
       cy.request<unknown>({ url: '/api/getUserDetailByEmail', qs: { email: user.email } }).then(
         (response) => {
           expect(response.status).to.eq(200);
-          const body = parseApiBody<UserResponse>(response.body);
+          const body = validateApiBody('user', response.body);
           expect(body.responseCode).to.eq(200);
           expect(body.user).to.include({
             name: updatedName,
@@ -98,7 +98,7 @@ describe('API regression: accounts', () => {
       }),
     ).then((response) => {
       expect(response.status).to.eq(200);
-      expect(parseApiBody<ApiResult>(response.body)).to.deep.eq({
+      expect(validateApiBody('message', response.body)).to.deep.eq({
         responseCode: 404,
         message: 'User not found!',
       });

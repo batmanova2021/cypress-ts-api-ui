@@ -1,6 +1,6 @@
-import { parseApiBody } from './api';
+import { validateApiBody } from './api';
 import { buildTestUser, loadFixture } from './data';
-import type { ApiResult, Credentials, TestUser } from './types';
+import type { Credentials, TestUser } from './types';
 
 declare global {
   namespace Cypress {
@@ -25,7 +25,7 @@ Cypress.Commands.add('createUser', () => {
       })
       .then((response) => {
         expect(response.status).to.eq(200);
-        const body = parseApiBody<ApiResult>(response.body);
+        const body = validateApiBody('message', response.body);
         expect(body.responseCode).to.eq(201);
         expect(body.message).to.eq('User created!');
         return user;
@@ -44,7 +44,7 @@ Cypress.Commands.add('deleteUser', (user: Credentials) => {
     })
     .then((response) => {
       expect(response.status).to.eq(200);
-      const body = parseApiBody<ApiResult>(response.body);
+      const body = validateApiBody('message', response.body);
       expect(body.responseCode).to.eq(200);
       expect(body.message).to.eq('Account deleted!');
     });

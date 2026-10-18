@@ -32,9 +32,12 @@ export interface RegressionData {
   updatedCity: string;
 }
 
-export interface ApiResult {
+export interface ApiResponse {
   responseCode: number;
-  message?: string;
+}
+
+export interface ApiResult extends ApiResponse {
+  message: string;
 }
 
 export interface Product {
@@ -45,12 +48,12 @@ export interface Product {
   category: { category: string; usertype: { usertype: string } };
 }
 
-export interface ProductsResponse extends ApiResult {
+export interface ProductsResponse extends ApiResponse {
   products: Product[];
 }
 
-export interface UserResponse extends ApiResult {
-  user: { name: string; email: string; city: string };
+export interface UserResponse extends ApiResponse {
+  user: { id: number; name: string; email: string; city: string };
 }
 
 export interface ProductDetails {
