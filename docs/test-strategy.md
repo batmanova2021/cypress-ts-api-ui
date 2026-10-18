@@ -63,5 +63,6 @@ reset endpoints, deeper authorization checks, and deterministic fault injection.
 Chrome is the only automated browser target; Firefox/WebKit coverage is not claimed.
 The suite does not cover payment completion, performance, accessibility, visual
 regression, or full runtime API schema validation. Add these based on requirements
-and risk, not simply to increase test count. Automated Cypress Cloud recording remains a later decision; the README links
-to an existing public recorded run.
+and risk, not simply to increase test count. Weekly regression records to Cypress
+Cloud; push, PR, and manual workflow runs remain unrecorded. The README links to
+public results. Monitor recorded usage as the suite grows.

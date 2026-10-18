@@ -61,5 +61,6 @@ summary calls out final failures and tests that passed after a failed attempt.
 
 Push/PR runs select smoke folders. Weekly and default manual runs select all API
 and UI specs, including smoke. There is one Chrome test job after a separate
-quality job. Tests run serially. A public Cloud project is linked, but automated
-Cloud recording and orchestration are not enabled in the workflow.
+quality job. Tests run serially. Weekly scheduled regression records to the public
+Cloud project using the `CYPRESS_RECORD_KEY` repository secret. Push, PR, and manual
+runs neither record nor receive the key. Cloud parallelization is not enabled.

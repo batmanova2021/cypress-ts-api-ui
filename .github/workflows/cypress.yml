@@ -69,9 +69,10 @@ jobs:
         uses: cypress-io/github-action@v7
         with:
           install-command: npm ci
-          command: npm run cy:${{ env.TEST_SUITE }}
+          command: npm run cy:${{ env.TEST_SUITE }}${{ github.event_name == 'schedule' && ' -- --record' || '' }}
         env:
           CYPRESS_VIDEO: 'true'
+          CYPRESS_RECORD_KEY: ${{ github.event_name == 'schedule' && secrets.CYPRESS_RECORD_KEY || '' }}
 
       - name: Publish test summary
         if: ${{ !cancelled() }}

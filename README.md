@@ -68,11 +68,11 @@ fails the job. Investigate the failed attempt before treating a retry as resolut
 
 The workflow uses Ubuntu 24.04, Node.js 24, and the runner's installed Chrome:
 
-| Trigger              | Quality checks                  | Test suite                                   |
-| -------------------- | ------------------------------- | -------------------------------------------- |
-| Push or pull request | Formatting, linting, TypeScript | Smoke                                        |
-| Monday at 07:00 UTC  | Same checks                     | Full regression including smoke              |
-| Manual dispatch      | Same checks                     | Regression by default; smoke can be selected |
+| Trigger              | Quality checks                  | Test suite                                   | Cloud recording |
+| -------------------- | ------------------------------- | -------------------------------------------- | --------------- |
+| Push or pull request | Formatting, linting, TypeScript | Smoke                                        | Off             |
+| Monday at 07:00 UTC  | Same checks                     | Full regression including smoke              | On              |
+| Manual dispatch      | Same checks                     | Regression by default; smoke can be selected | Off             |
 
 Tests wait for the quality job. GitHub schedules run from the default branch and
 may start later than their scheduled time. Each run publishes a Markdown job
@@ -81,9 +81,11 @@ including after test failures. Download the artifact from the run's Actions page
 and open `reports/html/index.html` inside it.
 Dependency and Cypress caches speed up installation; `npm ci` uses the lockfile.
 
-The current workflow runs without Cypress Cloud recording. No Cloud account,
-recording key, or repository secrets are needed to execute its tests. The workflow
-must be pushed to GitHub before it can run.
+Weekly scheduled regression runs record to Cypress Cloud using the repository
+secret `CYPRESS_RECORD_KEY`. Push, pull-request, and manual workflow runs do not
+record and do not receive the key. Scheduled recording requires a valid secret;
+a missing or invalid key fails the recorded run instead of silently disabling it.
+Workflow changes must reach the default branch before the schedule uses them.
 
 ## Public Cypress Cloud results
 
@@ -95,8 +97,9 @@ Reviewers can inspect recorded test results through these links:
 
 Open the example run to review test outcomes, durations, and the screenshots,
 videos, or Test Replay data available for that recording. Only runs explicitly
-recorded to Cloud appear there; ordinary local and GitHub Actions runs still
-produce the HTML/JUnit reports described above.
+recorded to Cloud appear there. Weekly scheduled runs are recorded automatically;
+ordinary local runs and push/PR/manual workflow runs remain unrecorded. Every test
+run still produces the HTML/JUnit reports described above.
 
 The project ID is stored in `cypress.config.ts` and is safe to commit. The record
 key is private and must never be committed. Maintainers with recording access can
@@ -106,9 +109,15 @@ set `CYPRESS_RECORD_KEY` in their environment and record a full run with:
 npm run cy:regression -- --record
 ```
 
-Automated weekly Cloud recording is not enabled in the current workflow. If it is
-enabled later, the record key should be stored as a GitHub Actions secret named
-`CYPRESS_RECORD_KEY`. Viewing public results does not require the record key.
+Automated recording is scheduled for **Mondays at 07:00 UTC** (03:00 in New York
+during daylight saving time, 02:00 during standard time). GitHub may delay scheduled
+runs. With the current 22 tests, four or five weekly runs record approximately
+88–110 test results per month; extra recorded runs also count toward usage.
+
+The workflow's **Run workflow** button runs tests on demand without Cloud recording.
+Maintainers can record an additional local run using the command above, which
+requires the key in their local environment. The GitHub repository secret is not
+automatically available locally. Viewing public results does not require the key.
 
 ## Test data and configuration
 
