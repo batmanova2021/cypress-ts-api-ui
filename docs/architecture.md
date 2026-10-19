@@ -30,6 +30,8 @@ A spec requests a typed fixture, generates a unique email, and creates its own
 account with `cy.createUser()`. It retains the yielded account for that test and
 cleans it up in `afterEach`. Every test starts with Cypress's browser isolation.
 UI registration deliberately exercises the form instead of using API setup.
+After form submission, an API lookup validates the created account and confirms
+its email before success-page assertions, so cleanup still runs if those assertions fail.
 
 The login API only verifies credentials, so it cannot replace UI authentication.
 `cy.login` accepts credentials and submits the login form. Assertions about login
@@ -52,6 +54,11 @@ Specs retain their HTTP status and business-outcome assertions.
 
 Small functions centralize repeated product navigation, search, price parsing,
 and opening the cart. A selector map centralizes common catalog/cart locators.
+Product actions use the site's product IDs and exact link destinations. Cart
+cells are located by column headings rather than fixed positions or styling classes.
+Price queries match the visible currency value without depending on nested spans.
+Where the demo supplies no test attributes, a small set of component classes stays
+centralized; readiness assertions retry before product data is captured.
 Helpers issue fresh Cypress queries and return chainables; they do not retain DOM
 nodes or user state. Assertions about business behavior stay visible in specs.
 
