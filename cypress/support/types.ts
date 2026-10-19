@@ -57,6 +57,7 @@ export interface UserResponse extends ApiResponse {
 }
 
 export interface ProductDetails {
+  id: number;
   name: string;
   price: string;
 }

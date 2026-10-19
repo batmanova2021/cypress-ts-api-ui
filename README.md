@@ -1,10 +1,14 @@
 # Cypress TypeScript API and UI framework
 
-API and UI tests for [Automation Exercise](https://automationexercise.com/), with
-independent test data, typed custom commands, Chrome execution, and GitHub Actions.
-The Chrome suite contains five smoke tests and twenty-two additional regression tests.
-Firefox reuses the three UI smoke tests; five regression tests validate the schema
-guards with in-memory samples, and twenty-two tests exercise the live demo.
+[![Cypress CI](https://github.com/batmanova2021/cypress-ts-api-ui/actions/workflows/cypress.yml/badge.svg?branch=master)](https://github.com/batmanova2021/cypress-ts-api-ui/actions/workflows/cypress.yml)
+
+Cypress + TypeScript API/UI test framework for [Automation Exercise](https://automationexercise.com/),
+with JSON Schema validation, Chrome/Firefox smoke tests, weekly regression,
+and HTML/JUnit reports. Tests use isolated account data and reusable typed helpers.
+
+Chrome runs 27 tests: five smoke tests and twenty-two additional regression tests.
+Five tests check schema guards with in-memory samples; twenty-two exercise the live site.
+Firefox runs the three UI smoke tests.
 
 **[View public Cypress Cloud results](https://cloud.cypress.io/projects/iwa573/runs/1/overview)**
 — explore an example recorded run, test outcomes, and available debugging artifacts.
@@ -100,6 +104,31 @@ record and do not receive the key. Firefox never records or receives the key.
 Scheduled recording requires a valid secret;
 a missing or invalid key fails the recorded run instead of silently disabling it.
 Workflow changes must reach the default branch before the schedule uses them.
+
+## Merge requirements
+
+The branch-protection policy requires `Format, lint, and TypeScript`,
+`chrome tests`, and `firefox tests`, an up-to-date branch, and a pull request.
+The repository owner has applied the policy with `npm run repo:protect`.
+See [activation and verification](docs/required-ci-checks.md) for maintenance instructions.
+The workflow passing alone does not enforce merge protection.
+
+## Execution evidence
+
+- [Successful Chrome and Firefox smoke CI](https://github.com/batmanova2021/cypress-ts-api-ui/actions/runs/39178515125)
+  — verified successful on commit `08fcb53`.
+- [Full regression workflow history](https://github.com/batmanova2021/cypress-ts-api-ui/actions/workflows/cypress.yml?query=event%3Aworkflow_dispatch)
+  — pending a successful manual run with the default `regression` suite.
+- [Scheduled workflow history](https://github.com/batmanova2021/cypress-ts-api-ui/actions/workflows/cypress.yml?query=event%3Aschedule)
+  — pending the first successful Monday run; Chrome records to Cloud.
+- [Public Cloud history](https://cloud.cypress.io/projects/iwa573/runs)
+  — match a recording to the scheduled GitHub run before treating it as scheduled-run evidence.
+
+No manual or scheduled CI runs existed when these links were checked. The CI badge
+shows workflow status and does not prove that full regression or recording succeeded.
+To produce full-regression evidence, open Actions → Cypress CI → Run workflow,
+select `master` and `regression`, then link the successful run here. After Monday's
+scheduled run succeeds, add its Actions URL and corresponding Cloud recording URL.
 
 ## Public Cypress Cloud results
 

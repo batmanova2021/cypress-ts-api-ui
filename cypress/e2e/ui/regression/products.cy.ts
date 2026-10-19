@@ -1,5 +1,11 @@
 import { loadFixture } from '../../../support/data';
-import { openFirstProduct, readFirstProduct, searchProducts, ui } from '../../../support/ui';
+import {
+  detailPrice,
+  openProduct,
+  readFirstProduct,
+  searchProducts,
+  ui,
+} from '../../../support/ui';
 
 describe('UI regression: product search and details', () => {
   beforeEach(() => {
@@ -22,17 +28,21 @@ describe('UI regression: product search and details', () => {
     loadFixture('regression').then(({ noMatchSearch }) => {
       searchProducts(noMatchSearch);
       cy.contains('h2', 'Searched Products').should('be.visible');
-      cy.get(ui.productCards).should('not.exist');
+      cy.get(ui.productLinks).should('not.exist');
     });
   });
 
   it('opens the selected product with its details', () => {
-    readFirstProduct().then(({ name, price }) => {
-      openFirstProduct();
+    readFirstProduct().then(({ id, name, price }) => {
+      openProduct(id);
       cy.location('pathname').should('match', /^\/product_details\/\d+$/);
+      detailPrice()
+        .invoke('text')
+        .should((text) => {
+          expect(text.trim()).to.eq(price);
+        });
       cy.get(ui.productDetails).within(() => {
         cy.get('h2').should('have.text', name);
-        cy.contains('span', price).should('be.visible');
         ['Category:', 'Availability:', 'Condition:', 'Brand:'].forEach((label) => {
           cy.contains('p', label)
             .should('be.visible')

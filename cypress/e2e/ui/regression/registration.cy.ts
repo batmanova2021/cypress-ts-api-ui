@@ -1,5 +1,6 @@
 import { loadFixture } from '../../../support/data';
 import type { TestUser } from '../../../support/types';
+import { validateApiBody } from '../../../support/api';
 import { buildTestUser } from '../../../support/data';
 
 describe('UI regression: registration', () => {
@@ -26,7 +27,7 @@ describe('UI regression: registration', () => {
     cy.get('[data-qa="signup-button"]').click();
     cy.get('[data-qa="password"]').should('be.visible');
     cy.then(() => {
-      cy.get('#id_gender1').check();
+      cy.get('input[name="title"]').check(user.title);
       cy.get('[data-qa="password"]').type(user.password, { log: false });
       cy.get('[data-qa="days"]').select(user.birth_date);
       cy.get('[data-qa="months"]').select(user.birth_month);
@@ -46,11 +47,21 @@ describe('UI regression: registration', () => {
       }
       cy.get('[data-qa="country"]').select(user.country);
     });
-    // Capture successful creation before UI assertions so later failures still clean up.
+    // Verify the owned account before page assertions so later failures still clean up.
     cy.intercept('POST', '**/signup').as('signup');
     cy.get('[data-qa="create-account"]').click();
-    cy.wait('@signup').then(({ response }) => {
-      accountCreated = response?.statusCode === 302 || response?.statusCode === 200;
+    cy.wait('@signup');
+    cy.then(() =>
+      cy.request<unknown>({
+        url: '/api/getUserDetailByEmail',
+        qs: { email: user.email },
+        log: false,
+      }),
+    ).then((response) => {
+      expect(response.status).to.eq(200);
+      const body = validateApiBody('user', response.body);
+      expect(body.user.email).to.eq(user.email);
+      accountCreated = true;
     });
     cy.get('[data-qa="account-created"]').should('be.visible');
     cy.get('[data-qa="continue-button"]').click();

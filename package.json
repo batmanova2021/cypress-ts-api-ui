@@ -1,8 +1,7 @@
 {
   "name": "cypress-ts-api-ui",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Cypress TypeScript API/UI framework with runtime schema validation, cross-browser smoke tests, scheduled regression, and CI reports.",
   "scripts": {
     "cy:open": "cypress open",
     "cy:run": "cypress run --browser chrome",
@@ -19,7 +18,8 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "cy:smoke:firefox": "cypress run --browser firefox --headless --spec \"cypress/e2e/ui/smoke/**/*.cy.ts\"",
-    "cy:smoke:firefox:headed": "cypress run --browser firefox --headed --spec \"cypress/e2e/ui/smoke/**/*.cy.ts\""
+    "cy:smoke:firefox:headed": "cypress run --browser firefox --headed --spec \"cypress/e2e/ui/smoke/**/*.cy.ts\"",
+    "repo:protect": "node scripts/protect-branch.mjs"
   },
   "keywords": [],
   "author": "",

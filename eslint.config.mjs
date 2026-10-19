@@ -17,6 +17,10 @@ export default defineConfig([
     extends: [js.configs.recommended],
   },
   {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
+  },
+  {
     files: ['**/*.ts'],
     extends: [tseslint.configs.recommended],
   },

@@ -1,46 +1,63 @@
-import { openFirstProduct, parsePrice, ui, viewCart } from '../../../support/ui';
+import {
+  addDetailProduct,
+  cartCell,
+  detailPrice,
+  openProduct,
+  parsePrice,
+  readFirstProduct,
+  removeCartProduct,
+  ui,
+  viewCart,
+} from '../../../support/ui';
 import { loadFixture } from '../../../support/data';
+import type { ProductDetails } from '../../../support/types';
+
 describe('UI regression: cart quantity and removal', () => {
+  let product: ProductDetails;
   beforeEach(() => {
     cy.visit('/products');
-    openFirstProduct();
+    readFirstProduct().then((selected) => {
+      product = selected;
+      openProduct(selected.id);
+    });
   });
 
   it('uses the selected quantity and calculates the line total', () => {
     loadFixture('regression').then(({ quantity }) => {
-      cy.get('.product-information > span > span')
+      detailPrice()
         .invoke('text')
         .then((priceText) => {
           const unitPrice = parsePrice(priceText);
           expect(unitPrice).to.be.greaterThan(0);
-          cy.get('#quantity').clear();
-          cy.get('#quantity').type(String(quantity));
-          cy.get('button.cart').click();
+          cy.get('input[name="quantity"]').clear();
+          cy.get('input[name="quantity"]').type(String(quantity));
+          addDetailProduct();
           viewCart();
-          cy.get(ui.cartRows)
-            .should('have.length', 1)
-            .within(() => {
-              cy.get('.cart_quantity button').should('have.text', String(quantity));
-              cy.get('.cart_price').should('contain.text', `Rs. ${unitPrice}`);
-              cy.get('.cart_total_price')
-                .invoke('text')
-                .then((totalText) => {
-                  expect(totalText.trim()).to.eq(`Rs. ${unitPrice * quantity}`);
-                });
+          cy.get(ui.cartRows).should('have.length', 1);
+          cartCell(product.id, 'Quantity').find('button').should('have.text', String(quantity));
+          cartCell(product.id, 'Price')
+            .invoke('text')
+            .should((text) => {
+              expect(parsePrice(text)).to.eq(unitPrice);
+            });
+          cartCell(product.id, 'Total')
+            .invoke('text')
+            .should((text) => {
+              expect(parsePrice(text)).to.eq(unitPrice * quantity);
             });
         });
     });
   });
 
   it('removes a product and keeps the cart empty after reload', () => {
-    cy.get('button.cart').click();
+    addDetailProduct();
     viewCart();
     cy.get(ui.cartRows).should('have.length', 1);
-    cy.get('.cart_quantity_delete').click();
-    cy.contains('Cart is empty!').should('be.visible');
+    cy.then(() => removeCartProduct(product.id));
+    cy.get('#empty_cart').should('be.visible').and('contain.text', 'Cart is empty!');
     cy.get(ui.cartRows).should('not.exist');
     cy.reload();
-    cy.contains('Cart is empty!').should('be.visible');
+    cy.get('#empty_cart').should('be.visible').and('contain.text', 'Cart is empty!');
     cy.get(ui.cartRows).should('not.exist');
   });
 });
